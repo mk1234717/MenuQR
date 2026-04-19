@@ -11,6 +11,10 @@
 
 - Email: matvii.kuprin@nure.ua
 
+- **Гоков Дмитро**, група ПЗПІ-25-4
+
+- Email: dmytro.hokov@nure.ua
+
 
 ## Технології
 
