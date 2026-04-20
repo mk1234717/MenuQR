@@ -1,0 +1,25 @@
+@startuml
+left to right direction
+
+actor "Власник закладу" as Owner
+actor "Гість" as Guest
+
+rectangle "MenuQR Система" {
+  usecase "Автентифікація" as UC_Auth
+  usecase "Генерація QR-коду" as UC_GenQR
+  usecase "Завантаження QR-коду у форматі PNG" as UC_DownloadPNG
+  usecase "Керування вмістом меню" as UC_ManageMenu
+  usecase "Перегляд публічного меню" as UC_ViewMenu
+}
+
+Owner --> UC_Auth
+Owner --> UC_GenQR
+Owner --> UC_DownloadPNG
+Owner --> UC_ManageMenu
+Guest --> UC_ViewMenu
+
+UC_DownloadPNG ..> UC_Auth : <<include>>
+UC_GenQR ..> UC_Auth : <<include>>
+UC_ManageMenu ..> UC_Auth : <<include>>
+
+@enduml
