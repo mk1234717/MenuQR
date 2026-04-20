@@ -1,0 +1,51 @@
+@startuml
+class User {
+  - id: UUID
+  
+  - email: String
+  - passwordHash: String
+  + authenticate(pwd: String): boolean
+}
+
+class RestaurantOwner {
+  - companyName: String
+  + createMenu(name: String): Menu
+  + downloadQRCode(menuId: UUID): File
+  
+}
+
+class Menu {
+  - id: UUID
+  - name: String
+  - isActive: boolean
+  + getPublicUrl(): String
+}
+
+class QRCode {
+  - id: UUID
+  - pngData: byte[]
+  - generatedAt: Date
+  + getPngFile(): File
+}
+
+class Category {
+  - id: UUID
+  - name: String
+  
+  - sortOrder: int
+}
+
+class MenuItem {
+  - id: UUID
+  - name: String
+  - price: float
+  - imageUrl: String
+}
+
+User <|-- RestaurantOwner
+RestaurantOwner "1" -- "*" Menu
+Menu "1" o-- "1" QRCode
+Menu "1" *-- "*" Category
+Category "1" *-- "*" MenuItem
+RestaurantOwner ..> QRCode : <<dependency>>
+@enduml
