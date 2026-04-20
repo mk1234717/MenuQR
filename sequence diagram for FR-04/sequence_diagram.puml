@@ -1,0 +1,34 @@
+@startuml
+actor "Власник закладу" as Owner
+participant ":WebController" as Controller
+
+participant ":AuthService" as Auth
+participant ":MenuRepository" as MenuRepo
+participant ":QRCode" as QR
+
+Owner -> Controller: requestDownloadQR(menuId)
+activate Controller
+
+Controller -> Auth: checkSession(token)
+activate Auth
+Auth --> Controller: true
+deactivate Auth
+
+Controller -> MenuRepo: findById(menuId)
+activate MenuRepo
+MenuRepo --> Controller: menu
+deactivate MenuRepo
+
+Controller -> menu: getQRCode()
+activate menu
+menu --> Controller: qrCode
+deactivate menu
+
+Controller -> qrCode: getPngFile()
+activate qrCode
+qrCode --> Controller: pngData
+deactivate qrCode
+
+Controller --> Owner: PNG file
+deactivate Controller
+@enduml
