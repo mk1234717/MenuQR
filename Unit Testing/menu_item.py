@@ -1,6 +1,7 @@
 import uuid
 from typing import List, Optional, Callable
 from decimal import Decimal, ROUND_HALF_UP
+import re
 
 class SeasonalDiscount:
     """DTO для сезонних/акційних знижок."""
@@ -20,6 +21,7 @@ class MenuItem:
     Страва в меню закладу.
     Відповідає діаграмі класів з ЛР 02 + розширений для unit-тестування.
     """
+    MAX_PRICE = 1_000_000
 
     def __init__(self, name: str, price: float, image_url: str = None,
                  is_available: bool = True, special_discount_percent: Optional[float] = None):
@@ -30,8 +32,8 @@ class MenuItem:
             raise ValueError("Назва страви не може бути порожньою.")
         if price < 0:
             raise ValueError("Ціна не може бути від'ємною.")
-        if price > 1_000_000:
-            raise ValueError("Ціна перевищує максимально допустиму (1 000 000).")
+        if price > self.MAX_PRICE:
+            raise ValueError(f"Ціна перевищує максимально допустиму ({self.MAX_PRICE}).")
         if special_discount_percent is not None and (special_discount_percent < 0 or special_discount_percent > 100):
             raise ValueError("Знижка має бути в діапазоні 0–100%.")
 
@@ -98,19 +100,20 @@ class MenuItem:
     # Метод №3 (нетривіальний): Комплексна валідація перед публікацією
     # ----------------------------------------------------------------------
     def validate_for_publish(self) -> ValidationResult:
-        """
-        Перевіряє всі поля страви: назва, ціна, знижка, URL зображення.
-        Повертає ValidationResult зі списком помилок.
-        """
         errors = []
+        self._validate_name(errors)
+        self._validate_price(errors)
+        self._validate_discount(errors)
+        self._validate_image_url(errors)
+        return ValidationResult(is_valid=len(errors) == 0, errors=errors)
 
-        # Перевірка назви
+    def _validate_name(self, errors: List[str]) -> None:
         if not self.name or len(self.name.strip()) < 2:
             errors.append("Назва повинна містити хоча б 2 символи.")
         elif len(self.name) > 100:
             errors.append("Назва не може перевищувати 100 символів.")
 
-        # Перевірка ціни
+    def _validate_price(self, errors: List[str]) -> None:
         if self.price < 0:
             errors.append("Ціна не може бути від'ємною.")
         elif self.price == 0:
@@ -118,21 +121,18 @@ class MenuItem:
         elif self.price > 10000:
             errors.append("Ціна занадто висока (> 10000).")
 
-        # Перевірка спеціальної знижки
+    def _validate_discount(self, errors: List[str]) -> None:
         if self.special_discount_percent is not None:
             if self.special_discount_percent < 0 or self.special_discount_percent > 100:
                 errors.append("Знижка має бути від 0% до 100%.")
             elif self.special_discount_percent == 100 and self.price > 0:
                 errors.append("Страва не може бути повністю безкоштовною через знижку 100%.")
 
-        # Перевірка URL зображення (якщо вказано)
+    def _validate_image_url(self, errors: List[str]) -> None:
         if self.image_url:
-            import re
             url_pattern = re.compile(r'^https?://\S+$')
             if not url_pattern.match(self.image_url):
                 errors.append("Посилання на зображення має бути коректним URL (http:// або https://).")
-
-        return ValidationResult(is_valid=len(errors) == 0, errors=errors)
 
     # ----------------------------------------------------------------------
     # Допоміжні методи (зміна стану) – не є основними для тестування логіки
