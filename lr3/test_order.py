@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 from order import Order, OrderItem, OrderStatus
 
 # --- Тести методу add_item ---
@@ -75,7 +76,7 @@ def test_calculate_total_empty():
     total = order.calculate_total()
     
     # Assert
-    assert total == 0.0
+    assert total == approx(0.0)
 
 def test_calculate_total_with_discount_and_tips():
     """EP: Комплексний розрахунок вартості зі знижкою та чайовими."""
@@ -85,10 +86,10 @@ def test_calculate_total_with_discount_and_tips():
     order.apply_promo_code("SAVE10")   # -10% -> 180.0
     
     # Act
-    total = order.calculate_total(tip_percent=10.0)  # 180 + 18 = 198.0
+    total = order.calculate_total(tip_percent=10.0) 
     
     # Assert
-    assert total == 198.0
+    assert total == approx(198.0)
 
 def test_calculate_total_tip_boundaries():
     """BVA: Перевірка меж відсотків чайових (0%, 50%, -0.01%, 50.01%)."""
@@ -96,10 +97,10 @@ def test_calculate_total_tip_boundaries():
     order.add_item("Стейк", 500.0, 1)
     
     # Нижня межа 0%
-    assert order.calculate_total(tip_percent=0.0) == 500.0
+    assert order.calculate_total(tip_percent=0.0) == approx(500.0)
     
     # Верхня межа 50%
-    assert order.calculate_total(tip_percent=50.0) == 750.0
+    assert order.calculate_total(tip_percent=50.0) == approx(750.0)
     
     # Поза нижньою межею
     with pytest.raises(ValueError, match="Чайові повинні бути в діапазоні"):
